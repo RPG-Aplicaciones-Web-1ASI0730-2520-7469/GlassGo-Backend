@@ -1,14 +1,17 @@
 using GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
+using GlassGo.API.Tracking.Domain.Model.Aggregates;
 
 namespace GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    
+    public DbSet<Delivery> Deliveries { get; set; } = null!;
+
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
-        // Automatically set CreatedDate and UpdatedDate for entities
         builder.AddCreatedUpdatedInterceptor();
         base.OnConfiguring(builder);
     }
@@ -17,9 +20,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     {
         base.OnModelCreating(builder);
         
-        
-        
-        // Apply naming convention to use snake_case for database objects
         builder.UseSnakeCaseNamingConvention();
     }
 }
