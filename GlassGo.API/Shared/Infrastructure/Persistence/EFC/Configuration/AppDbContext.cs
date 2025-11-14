@@ -35,5 +35,11 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         
         // Apply naming convention to use snake_case for database objects
         builder.UseSnakeCaseNamingConvention();
+        
+        // Register all entity configurations from all BCs
+        builder.ApplyAllConfigurations();
+
+        // Apply snake_case for all table/column names
+        builder.UseSnakeCaseNamingConvention();
     }
 }

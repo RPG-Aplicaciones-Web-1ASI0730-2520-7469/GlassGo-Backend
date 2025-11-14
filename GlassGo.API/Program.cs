@@ -24,6 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.EnableAnnotations());
 builder.Services.AddOpenApi();
 
+
 // Add Database Connection
 if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<AppDbContext>(options => {
