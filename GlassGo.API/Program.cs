@@ -55,6 +55,11 @@ else if (builder.Environment.IsProduction())
 // Shared Bounded Context Dependency Injection
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Service Planning Bounded Context Dependency Injection
+builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Repositories.IOrderRepository, GlassGo.API.ServicePlanning.Infrastructure.Persistence.EFC.Repositories.OrderRepository>();
+builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Services.IOrderCommandService, GlassGo.API.ServicePlanning.Application.Internal.CommandServices.OrderCommandService>();
+builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Services.IOrderQueryService, GlassGo.API.ServicePlanning.Application.Internal.QueryServices.OrderQueryService>();
+
 
 var app = builder.Build();
 
