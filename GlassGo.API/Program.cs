@@ -79,7 +79,7 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 app.UseRequestLocalization(localizationOptions);
 
-// app.UseHttpsRedirection(); // Comentado para evitar error por falta de puerto HTTPS
+app.UseHttpsRedirection(); // Comentado para evitar error por falta de puerto HTTPS
 
 app.UseAuthorization();
 
