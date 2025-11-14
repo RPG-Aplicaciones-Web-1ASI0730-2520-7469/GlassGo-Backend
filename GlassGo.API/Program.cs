@@ -2,6 +2,11 @@ using GlassGo.API.Shared.Domain.Repositories;
 using GlassGo.API.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using GlassGo.API.Shared.Infrastructure.Persistence.EFC.Repositories;
+using GlassGo.API.Analytics.Domain.Entities;
+using GlassGo.API.Analytics.Domain.Interfaces;
+using GlassGo.API.Analytics.Domain.Services;
+using GlassGo.API.Analytics.Infrastructure.Data;
+using GlassGo.API.Analytics.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,14 +27,14 @@ builder.Services.AddOpenApi();
 // Add Database Connection
 if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<AppDbContext>(options => {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (connectionString is null) 
-        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-    options.UseMySQL(connectionString)
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableSensitiveDataLogging()
-        .EnableDetailedErrors();
-});
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (connectionString is null) 
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        options.UseMySQL(connectionString)
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    });
 else if (builder.Environment.IsProduction())
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
@@ -51,15 +56,7 @@ else if (builder.Environment.IsProduction())
     });
 
 // Configure Dependency Injection
-
-// Shared Bounded Context Dependency Injection
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Service Planning Bounded Context Dependency Injection
-builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Repositories.IOrderRepository, GlassGo.API.ServicePlanning.Infrastructure.Persistence.EFC.Repositories.OrderRepository>();
-builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Services.IOrderCommandService, GlassGo.API.ServicePlanning.Application.Internal.CommandServices.OrderCommandService>();
-builder.Services.AddScoped<GlassGo.API.ServicePlanning.Domain.Services.IOrderQueryService, GlassGo.API.ServicePlanning.Application.Internal.QueryServices.OrderQueryService>();
-
 
 var app = builder.Build();
 
@@ -84,7 +81,7 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 app.UseRequestLocalization(localizationOptions);
 
-// app.UseHttpsRedirection(); // Comentado para evitar error por falta de puerto HTTPS
+app.UseHttpsRedirection(); // Comentado para evitar error por falta de puerto HTTPS
 
 app.UseAuthorization();
 
