@@ -70,7 +70,7 @@ app.UseSwaggerUI();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // dbContext.Database.EnsureCreated(); // Comentado temporalmente para evitar error de conexión a MySQL
+    dbContext.Database.EnsureCreated(); // Comentado temporalmente para evitar error de conexión a MySQL
 }
 
 // Localization Configuration
