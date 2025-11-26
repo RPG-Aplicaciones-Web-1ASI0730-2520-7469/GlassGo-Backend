@@ -54,7 +54,7 @@ public class ReportCommandService
     }
 
     /// <summary>
-    /// Deletes a report from the system by its identifier.
+    /// Deletes a report from the syssstem by its identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the report to delete.</param>
     /// <returns>True if the report was successfully deleted; otherwise, false.</returns>
