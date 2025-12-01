@@ -43,23 +43,49 @@ builder.Services.AddOpenApi();
 
 // Add Database Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    // Use InMemory database for development (no MySQL required)
-    options.UseInMemoryDatabase("GlassGoDb")
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableSensitiveDataLogging()
-        .EnableDetailedErrors();
-});
 
-builder.Services.AddDbContext<DashboardAnalyticsContext>(options =>
+// Use InMemory for Development, MySQL for Production
+if (builder.Environment.IsDevelopment())
 {
-    // Use InMemory database for development (no MySQL required)
-    options.UseInMemoryDatabase("GlassGoAnalyticsDb")
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableSensitiveDataLogging()
-        .EnableDetailedErrors();
-});
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        options.UseInMemoryDatabase("GlassGoDb")
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    });
+    
+    builder.Services.AddDbContext<DashboardAnalyticsContext>(options =>
+    {
+        options.UseInMemoryDatabase("GlassGoAnalyticsDb")
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    });
+}
+else
+{
+    // Production: Use MySQL from Filess.io
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        if (connectionString is null) 
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        options.UseMySQL(connectionString)
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    });
+    
+    builder.Services.AddDbContext<DashboardAnalyticsContext>(options =>
+    {
+        if (connectionString is null) 
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        options.UseMySQL(connectionString)
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    });
+}
 
 
 // Configure JWT Settings
@@ -121,11 +147,11 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 // Verify Database Objects Creation
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     dbContext.Database.EnsureCreated();
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.EnsureCreated();
+}
 
 // Localization Configuration
 var supportedCultures = new[] { "en", "en-US", "es", "es-PE" };
