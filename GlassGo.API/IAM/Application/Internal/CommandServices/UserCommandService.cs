@@ -58,4 +58,18 @@ public class UserCommandService(
             throw new Exception($"An error occurred while creating user: {e.Message}");
         }
     }
+    
+    /// <summary>
+    /// Handle a user role update operation.
+    /// </summary>
+    /// <param name="command">The update user role command.</param>
+    public async Task Handle(UpdateUserRoleCommand command)
+    {
+        var user = await userRepository.FindByIdAsync(command.UserId);
+        if (user == null) throw new Exception("User not found");
+
+        user.UpdateRole(command.Role);
+        userRepository.Update(user);
+        await unitOfWork.CompleteAsync();
+    }
 }

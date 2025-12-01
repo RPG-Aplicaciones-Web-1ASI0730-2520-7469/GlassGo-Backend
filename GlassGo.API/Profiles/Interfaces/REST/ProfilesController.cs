@@ -3,6 +3,7 @@ using GlassGo.API.Profiles.Domain.Model.Queries;
 using GlassGo.API.Profiles.Domain.Services;
 using GlassGo.API.Profiles.Interfaces.REST.Resources;
 using GlassGo.API.Profiles.Interfaces.REST.Transform;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -17,7 +18,8 @@ public class ProfilesController(
     : ControllerBase
 {
     [HttpGet("{profileId:int}")]
-    [SwaggerOperation("Get Profile by Id", "Get a profile by its unique identifier.", OperationId = "GetProfileById")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation("Get Profile by Id (Admin only)", "Get a profile by its unique identifier.", OperationId = "GetProfileById")]
     [SwaggerResponse(200, "The profile was found and returned.", typeof(ProfileResource))]
     [SwaggerResponse(404, "The profile was not found.")]
     public async Task<IActionResult> GetProfileById(int profileId)
@@ -43,7 +45,8 @@ public class ProfilesController(
     }
 
     [HttpGet]
-    [SwaggerOperation("Get All Profiles", "Get all profiles.", OperationId = "GetAllProfiles")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation("Get All Profiles (Admin only)", "Get all profiles.", OperationId = "GetAllProfiles")]
     [SwaggerResponse(200, "The profiles were found and returned.", typeof(IEnumerable<ProfileResource>))]
     [SwaggerResponse(404, "The profiles were not found.")]
     public async Task<IActionResult> GetAllProfiles()

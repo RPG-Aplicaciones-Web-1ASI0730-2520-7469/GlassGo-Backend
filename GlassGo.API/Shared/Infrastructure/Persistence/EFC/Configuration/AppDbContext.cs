@@ -5,7 +5,7 @@ using GlassGo.API.ServicePlanning.Domain.Model.Aggregates;
 
 namespace GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     // Service Planning Bounded Context
     public DbSet<Order> Orders { get; set; }

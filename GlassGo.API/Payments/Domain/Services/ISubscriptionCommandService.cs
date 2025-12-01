@@ -2,7 +2,7 @@
 
 namespace GlassGo.API.Payments.Domain.Services;
 
-public interface IPaymentCommandService
+public interface ISubscriptionCommandService
 {
-    Task Handle(CreatePaymentCommand command);
+    Task Handle(CancelSubscriptionAsAdminCommand command);
 }

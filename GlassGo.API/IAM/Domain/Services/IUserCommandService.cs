@@ -24,4 +24,11 @@ public interface IUserCommandService
     /// <param name="command">The sign-up command with new user data.</param>
     /// <returns>A <see cref="Task"/> that completes when the operation finishes.</returns>
     Task Handle(SignUpCommand command);
+    
+    /// <summary>
+    /// Handle a user role update operation.
+    /// </summary>
+    /// <param name="command">The update user role command.</param>
+    /// <returns>A <see cref="Task"/> that completes when the operation finishes.</returns>
+    Task Handle(UpdateUserRoleCommand command);
 }

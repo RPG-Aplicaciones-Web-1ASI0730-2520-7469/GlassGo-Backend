@@ -1,8 +1,10 @@
 ﻿using System.Net.Mime;
+using GlassGo.API.ServicePlanning.Domain.Model.Commands;
 using GlassGo.API.ServicePlanning.Domain.Model.Queries;
 using GlassGo.API.ServicePlanning.Domain.Services;
 using GlassGo.API.ServicePlanning.Interfaces.REST.Resources;
 using GlassGo.API.ServicePlanning.Interfaces.REST.Transform;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -35,8 +37,9 @@ public class OrdersController(
     }
 
     [HttpGet]
+    [Authorize(Policy = "AdminOnly")]
     [SwaggerOperation(
-        Summary = "Get all orders",
+        Summary = "Get all orders (Admin only)",
         Description = "Get all service orders",
         OperationId = "GetAllOrders")]
     [SwaggerResponse(200, "The orders were retrieved", typeof(IEnumerable<OrderResource>))]
@@ -66,5 +69,21 @@ public class OrdersController(
         var orderResource = OrderResourceFromEntityAssembler.ToResourceFromEntity(order);
         return Ok(orderResource);
     }
+    
+    [HttpPatch("{orderId:int}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        Summary = "Updates an order's status (Admin only)",
+        Description = "Updates an order's status by order id.",
+        OperationId = "UpdateOrderStatus")]
+    [SwaggerResponse(200, "The order status was updated", typeof(OrderResource))]
+    public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] UpdateOrderStatusResource resource)
+    {
+        var command = new UpdateOrderStatusCommand(orderId, resource.Status);
+        await orderCommandService.Handle(command);
+        
+        var order = await orderQueryService.Handle(new GetOrderByIdQuery(orderId));
+        var orderResource = OrderResourceFromEntityAssembler.ToResourceFromEntity(order!);
+        return Ok(orderResource);
+    }
 }
-

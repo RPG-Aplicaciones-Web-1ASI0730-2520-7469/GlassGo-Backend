@@ -1,4 +1,4 @@
-﻿using GlassGo.API.Payments.Application.Internal.CommandServices;
+﻿using GlassGo.API.Payments.Application.Internal.ComandServices;
 using GlassGo.API.Payments.Application.Internal.QueryServices;
 using GlassGo.API.Payments.Domain.Repositories;
 using GlassGo.API.Payments.Domain.Services;
@@ -17,7 +17,7 @@ public static class WebApplicationBuilderExtensions
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
         // Domain/Application Services
-        services.AddScoped<IPaymentCommandService, PaymentCommandService>();
+        services.AddScoped<IPaymentCommandService, PaymentComandService>();
         services.AddScoped<IPaymentQueryService, PaymentQueryService>();
 
         return builder;

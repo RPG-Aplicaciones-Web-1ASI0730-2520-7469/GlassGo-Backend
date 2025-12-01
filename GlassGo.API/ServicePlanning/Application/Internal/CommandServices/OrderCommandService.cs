@@ -33,5 +33,14 @@ public class OrderCommandService(IOrderRepository orderRepository, IUnitOfWork u
             return null;
         }
     }
-}
+    
+    public async Task Handle(UpdateOrderStatusCommand command)
+    {
+        var order = await orderRepository.FindByIdAsync(command.OrderId);
+        if (order == null) throw new Exception("Order not found");
 
+        order.Status = command.Status;
+        orderRepository.Update(order);
+        await unitOfWork.CompleteAsync();
+    }
+}

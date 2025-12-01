@@ -32,6 +32,11 @@ public class User(string username, string passwordHash)
     /// Gets the password hash. This property is ignored for JSON serialization.
     /// </summary>
     [JsonIgnore] public string PasswordHash { get; private set; } = passwordHash;
+    
+    /// <summary>
+    /// Gets or sets the user's role.
+    /// </summary>
+    public string Role { get; private set; } = "User";
 
     /// <summary>
     /// Update the user's username.
@@ -52,6 +57,17 @@ public class User(string username, string passwordHash)
     public User UpdatePasswordHash(string passwordHash)
     {
         PasswordHash = passwordHash;
+        return this;
+    }
+    
+    /// <summary>
+    /// Updates the user's role.
+    /// </summary>
+    /// <param name="role">The new role.</param>
+    /// <returns>The updated <see cref="User"/> instance.</returns>
+    public User UpdateRole(string role)
+    {
+        Role = role;
         return this;
     }
 }

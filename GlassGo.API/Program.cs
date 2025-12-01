@@ -1,3 +1,4 @@
+using System.Text;
 using GlassGo.API.Shared.Domain.Repositories;
 using GlassGo.API.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration;
@@ -7,7 +8,23 @@ using GlassGo.API.Analytics.Domain.Interfaces;
 using GlassGo.API.Analytics.Domain.Services;
 using GlassGo.API.Analytics.Infrastructure.Data;
 using GlassGo.API.Analytics.Infrastructure.Repositories;
+using GlassGo.API.IAM.Application.Internal.CommandServices;
+using GlassGo.API.IAM.Application.Internal.OutboundServices;
+using GlassGo.API.IAM.Application.Internal.QueryServices;
+using GlassGo.API.IAM.Domain.Repositories;
+using GlassGo.API.IAM.Domain.Services;
+using GlassGo.API.IAM.Infrastructure.Hashing.BCrypt.Services;
+using GlassGo.API.IAM.Infrastructure.Persistence.EFC.Repositories;
+using GlassGo.API.IAM.Infrastructure.Tokens.JWT.Configuration;
+using GlassGo.API.IAM.Infrastructure.Tokens.JWT.Services;
+using GlassGo.API.Payments.Application.Internal.ComandServices;
+using GlassGo.API.Payments.Application.Internal.QueryServices;
+using GlassGo.API.Payments.Domain.Repositories;
+using GlassGo.API.Payments.Domain.Services;
+using GlassGo.API.Payments.Infrastructure.Persistence.EFC.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,40 +41,79 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.EnableAnnotations());
 builder.Services.AddOpenApi();
 
-
 // Add Database Connection
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddDbContext<AppDbContext>(options => {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        if (connectionString is null) 
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        options.UseMySQL(connectionString)
-            .LogTo(Console.WriteLine, LogLevel.Information)
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors();
-    });
-else if (builder.Environment.IsProduction())
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
-        var connectionStringTemplate = configuration.GetConnectionString("DefaultConnection");
-        if (string.IsNullOrEmpty(connectionStringTemplate)) 
-            // Stop the application if the connection string template is not set.
-            throw new Exception("Database connection string template is not set in the configuration.");
-        var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
-        if (string.IsNullOrEmpty(connectionString))
-            // Stop the application if the connection string is not set.
-            throw new Exception("Database connection string is not set in the configuration.");
-        options.UseMySQL(connectionString)
-            .LogTo(Console.WriteLine, LogLevel.Error)
-            .EnableDetailedErrors();
-    });
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    if (connectionString is null) 
+        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    options.UseMySQL(connectionString)
+        .LogTo(Console.WriteLine, LogLevel.Information)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors();
+});
+
+builder.Services.AddDbContext<DashboardAnalyticsContext>(options =>
+{
+    if (connectionString is null) 
+        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    options.UseMySQL(connectionString)
+        .LogTo(Console.WriteLine, LogLevel.Information)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors();
+});
+
+
+// Configure JWT Settings
+builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
 
 // Configure Dependency Injection
+// Shared
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// IAM
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserCommandService, UserCommandService>();
+builder.Services.AddScoped<IUserQueryService, UserQueryService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IHashingService, HashingService>();
+
+// Payments
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IPaymentCommandService, PaymentComandService>();
+builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+builder.Services.AddScoped<IPaymentQueryService, PaymentQueryService>();
+builder.Services.AddScoped<ISubscriptionQueryService, SubscriptionQueryService>();
+
+
+// Analytics
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<ReportService>();
+
+
+// Configure Authentication and Authorization
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var tokenSettings = builder.Configuration.GetSection("TokenSettings").Get<TokenSettings>();
+        if (tokenSettings == null) throw new InvalidOperationException("TokenSettings is not configured");
+        var key = Encoding.ASCII.GetBytes(tokenSettings.Secret);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            RoleClaimType = "role"
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
 
 var app = builder.Build();
 
@@ -70,7 +126,7 @@ app.UseSwaggerUI();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.EnsureCreated(); // Comentado temporalmente para evitar error de conexión a MySQL
+    dbContext.Database.EnsureCreated();
 }
 
 // Localization Configuration
@@ -82,8 +138,9 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 app.UseRequestLocalization(localizationOptions);
 
-app.UseHttpsRedirection(); // Comentado para evitar error por falta de puerto HTTPS
+app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

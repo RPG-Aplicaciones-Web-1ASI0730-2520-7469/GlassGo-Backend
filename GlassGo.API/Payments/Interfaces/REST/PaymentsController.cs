@@ -1,61 +1,63 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Net.Mime;
+using GlassGo.API.Payments.Domain.Model.Commands;
 using GlassGo.API.Payments.Domain.Model.Queries;
 using GlassGo.API.Payments.Domain.Services;
 using GlassGo.API.Payments.Interfaces.REST.Resources;
 using GlassGo.API.Payments.Interfaces.REST.Transform;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace GlassGo.API.Payments.Interfaces.REST;
 
 [ApiController]
-[Route("api/v1/payments")]
-public class PaymentsController : ControllerBase
+[Route("api/v1/[controller]")]
+[Produces(MediaTypeNames.Application.Json)]
+public class PaymentsController(
+    IPaymentCommandService paymentCommandService,
+    IPaymentQueryService paymentQueryService) : ControllerBase
 {
-    private readonly IPaymentCommandService _paymentCommandService;
-    private readonly IPaymentQueryService _paymentQueryService;
-
-    public PaymentsController(
-        IPaymentCommandService paymentCommandService,
-        IPaymentQueryService paymentQueryService)
-    {
-        _paymentCommandService = paymentCommandService;
-        _paymentQueryService = paymentQueryService;
-    }
-
-    /// <summary>
-    /// Get all payments.
-    /// </summary>
     [HttpGet]
-    public async Task<IEnumerable<PaymentResource>> GetAllAsync()
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        Summary = "Get all payments (Admin only)",
+        Description = "Get all payments",
+        OperationId = "GetAllPayments")]
+    [SwaggerResponse(200, "The payments were retrieved", typeof(IEnumerable<PaymentResource>))]
+    public async Task<IActionResult> GetAllPayments()
     {
-        var query = new GetAllPaymentsQuery();
-        var payments = await _paymentQueryService.Handle(query);
-        return payments.Select(PaymentResourceFromEntityAssembler.ToResource);
+        var getAllPaymentsQuery = new GetAllPaymentsQuery();
+        var payments = await paymentQueryService.Handle(getAllPaymentsQuery);
+        var paymentResources = payments.Select(PaymentResourceFromEntityAssembler.ToResource);
+        return Ok(paymentResources);
     }
 
-    /// <summary>
-    /// Get payments for a specific user.
-    /// </summary>
     [HttpGet("user/{userId:int}")]
-    public async Task<IEnumerable<PaymentResource>> GetByUserIdAsync(int userId)
+    [SwaggerOperation(
+        Summary = "Get payments for a specific user",
+        Description = "Get payments for a specific user",
+        OperationId = "GetPaymentsByUserId")]
+    [SwaggerResponse(200, "The payments were retrieved", typeof(IEnumerable<PaymentResource>))]
+    public async Task<IActionResult> GetPaymentsByUserId(int userId)
     {
-        var query = new GetPaymentsByUserIdQuery(userId);
-        var payments = await _paymentQueryService.Handle(query);
-        return payments.Select(PaymentResourceFromEntityAssembler.ToResource);
+        var getPaymentsByUserIdQuery = new GetPaymentsByUserIdQuery(userId);
+        var payments = await paymentQueryService.Handle(getPaymentsByUserIdQuery);
+        var paymentResources = payments.Select(PaymentResourceFromEntityAssembler.ToResource);
+        return Ok(paymentResources);
     }
 
-    /// <summary>
-    /// Create a new payment.
-    /// </summary>
     [HttpPost]
-    public async Task<ActionResult<PaymentResource>> PostAsync([FromBody] CreatePaymentResource resource)
+    [SwaggerOperation(
+        Summary = "Create a new payment",
+        Description = "Create a new payment",
+        OperationId = "CreatePayment")]
+    [SwaggerResponse(201, "The payment was created", typeof(PaymentResource))]
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentResource resource)
     {
-        var command = CreatePaymentCommandFromResourceAssembler.ToCommand(resource);
-        var result = await _paymentCommandService.Handle(command);
-        var paymentResource = PaymentResourceFromEntityAssembler.ToResource(result);
-
-        return CreatedAtAction(nameof(GetAllAsync), new { id = paymentResource.Id }, paymentResource);
+        var createPaymentCommand = CreatePaymentCommandFromResourceAssembler.ToCommand(resource);
+        await paymentCommandService.Handle(createPaymentCommand);
+        // Note: This is not ideal, as we don't have a GetPaymentById endpoint to return the created resource.
+        // This is a simplification for the purpose of this exercise.
+        return Created();
     }
 }
