@@ -65,12 +65,18 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    // Production: Use MySQL from Filess.io
+    // Production: Build connection string from environment variables (Render)
+    var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL") ?? "localhost";
+    var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "3306";
+    var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? "root";
+    var dbPass = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? "";
+    var dbName = Environment.GetEnvironmentVariable("DATABASE_SCHEMA") ?? "glassgo";
+    
+    var prodConnectionString = $"server={dbUrl};port={dbPort};user={dbUser};password={dbPass};database={dbName}";
+    
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
-        if (connectionString is null) 
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        options.UseMySQL(connectionString)
+        options.UseMySQL(prodConnectionString)
             .LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
@@ -78,9 +84,7 @@ else
     
     builder.Services.AddDbContext<DashboardAnalyticsContext>(options =>
     {
-        if (connectionString is null) 
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        options.UseMySQL(connectionString)
+        options.UseMySQL(prodConnectionString)
             .LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
