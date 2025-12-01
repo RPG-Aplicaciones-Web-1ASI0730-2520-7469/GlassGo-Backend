@@ -154,7 +154,16 @@ app.UseSwaggerUI();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    // Only run migrations for relational databases (not InMemory)
+    if (!builder.Environment.IsDevelopment())
+    {
+        dbContext.Database.Migrate();
+    }
+    else
+    {
+        // Ensure InMemory database is created
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 // Localization Configuration
