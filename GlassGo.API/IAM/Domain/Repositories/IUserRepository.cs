@@ -14,6 +14,13 @@ public interface IUserRepository : IBaseRepository<User>
     /// <param name="username">The username to search.</param>
     /// <returns>The <see cref="User"/> when found; otherwise <c>null</c>.</returns>
     Task<User?> FindByUsernameAsync(string username);
+    
+    /// <summary>
+    /// Find a user by email asynchronously.
+    /// </summary>
+    /// <param name="email">The email to search.</param>
+    /// <returns>The <see cref="User"/> when found; otherwise <c>null</c>.</returns>
+    Task<User?> FindByEmailAsync(string email);
 
     /// <summary>
     /// Checks if a user exists by username.

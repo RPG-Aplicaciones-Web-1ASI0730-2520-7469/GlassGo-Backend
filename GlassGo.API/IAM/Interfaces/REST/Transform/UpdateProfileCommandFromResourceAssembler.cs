@@ -3,23 +3,19 @@ using GlassGo.API.IAM.Interfaces.REST.Resources;
 
 namespace GlassGo.API.IAM.Interfaces.REST.Transform;
 
-public static class SignUpCommandFromResourceAssembler
+public static class UpdateProfileCommandFromResourceAssembler
 {
-    public static SignUpCommand ToCommandFromResource(SignUpResource resource)
+    public static UpdateProfileCommand ToCommandFromResource(int userId, UpdateProfileResource resource)
     {
-        return new SignUpCommand(
-            resource.Username, 
-            resource.Password,
-            resource.Email,
+        return new UpdateProfileCommand(
+            userId,
             resource.FirstName,
             resource.LastName,
-            resource.Role,
             resource.Phone,
             resource.Company,
             resource.BusinessName,
             resource.TaxId,
-            resource.Address,
-            resource.PreferredCurrency
+            resource.Address
         );
     }
 }

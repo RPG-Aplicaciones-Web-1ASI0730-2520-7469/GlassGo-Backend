@@ -12,6 +12,7 @@
         <PackageReference Include="EntityFrameworkCore.CreatedUpdatedDate" Version="8.0.0" />
         <!-- Entity Framework Core related packages -->
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
         <!-- MySQL Entity Framework Core related packages -->

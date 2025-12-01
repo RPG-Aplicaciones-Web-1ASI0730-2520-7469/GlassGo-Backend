@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using GlassGo.API.IAM.Domain.Model.ValueObjects;
 
 namespace GlassGo.API.IAM.Domain.Model.Aggregates;
 
@@ -34,9 +35,79 @@ public class User(string username, string passwordHash)
     [JsonIgnore] public string PasswordHash { get; private set; } = passwordHash;
     
     /// <summary>
+    /// Gets or sets the user's email address.
+    /// </summary>
+    public string Email { get; private set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string FirstName { get; private set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string LastName { get; private set; } = string.Empty;
+    
+    /// <summary>
     /// Gets or sets the user's role.
     /// </summary>
-    public string Role { get; private set; } = "User";
+    public string Role { get; private set; } = "business-owner";
+    
+    /// <summary>
+    /// Gets or sets the user's company name.
+    /// </summary>
+    public string Company { get; private set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the user's business name (for business owners).
+    /// </summary>
+    public string? BusinessName { get; private set; }
+    
+    /// <summary>
+    /// Gets or sets the user's tax ID.
+    /// </summary>
+    public string? TaxId { get; private set; }
+    
+    /// <summary>
+    /// Gets or sets the user's address.
+    /// </summary>
+    public string? Address { get; private set; }
+    
+    /// <summary>
+    /// Gets or sets the user's phone number.
+    /// </summary>
+    public string Phone { get; private set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the user's preferred currency.
+    /// </summary>
+    public string PreferredCurrency { get; private set; } = "PEN";
+    
+    /// <summary>
+    /// Gets or sets the user's loyalty points.
+    /// </summary>
+    public int LoyaltyPoints { get; private set; }
+    
+    /// <summary>
+    /// Gets or sets whether the user account is active.
+    /// </summary>
+    public bool IsActive { get; private set; } = true;
+    
+    /// <summary>
+    /// Gets the timestamp when the user was created.
+    /// </summary>
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    
+    /// <summary>
+    /// Gets or sets the user's notification preferences.
+    /// </summary>
+    public NotificationSettings Notifications { get; private set; } = new();
+    
+    /// <summary>
+    /// Gets or sets the user's payment methods.
+    /// </summary>
+    public List<PaymentMethod> PaymentMethods { get; private set; } = new();
 
     /// <summary>
     /// Update the user's username.
@@ -68,6 +139,69 @@ public class User(string username, string passwordHash)
     public User UpdateRole(string role)
     {
         Role = role;
+        return this;
+    }
+    
+    /// <summary>
+    /// Updates the user's email.
+    /// </summary>
+    /// <param name="email">The new email.</param>
+    /// <returns>The updated <see cref="User"/> instance.</returns>
+    public User UpdateEmail(string email)
+    {
+        Email = email;
+        return this;
+    }
+    
+    /// <summary>
+    /// Updates the user's profile information.
+    /// </summary>
+    public User UpdateProfile(string firstName, string lastName, string phone, string? company = null, 
+        string? businessName = null, string? taxId = null, string? address = null)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Phone = phone;
+        if (company != null) Company = company;
+        if (businessName != null) BusinessName = businessName;
+        if (taxId != null) TaxId = taxId;
+        if (address != null) Address = address;
+        return this;
+    }
+    
+    /// <summary>
+    /// Updates the user's notification settings.
+    /// </summary>
+    public User UpdateNotifications(NotificationSettings notifications)
+    {
+        Notifications = notifications;
+        return this;
+    }
+    
+    /// <summary>
+    /// Adds loyalty points to the user.
+    /// </summary>
+    public User AddLoyaltyPoints(int points)
+    {
+        LoyaltyPoints += points;
+        return this;
+    }
+    
+    /// <summary>
+    /// Deactivates the user account.
+    /// </summary>
+    public User Deactivate()
+    {
+        IsActive = false;
+        return this;
+    }
+    
+    /// <summary>
+    /// Activates the user account.
+    /// </summary>
+    public User Activate()
+    {
+        IsActive = true;
         return this;
     }
 }

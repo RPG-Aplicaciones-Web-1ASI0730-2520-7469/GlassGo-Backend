@@ -10,7 +10,15 @@ public class IamContextFacade(IUserCommandService userCommandService, IUserQuery
 {
     public async Task<int> CreateUser(string username, string password)
     {
-        var signUpCommand = new SignUpCommand(username, password);
+        var signUpCommand = new SignUpCommand(
+            username, 
+            password,
+            $"{username}@glassgo.com", // Default email
+            "User", // Default first name
+            "Account", // Default last name
+            "business-owner", // Default role
+            "+51 000000000" // Default phone
+        );
         await userCommandService.Handle(signUpCommand);
         var getUserByUsernameQuery = new GetUserByUsernameQuery(username);
         var result = await userQueryService.Handle(getUserByUsernameQuery);

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GlassGo.API.Payments.Infrastructure.Persistence.EFC.Configuration.Extensions;
+using GlassGo.API.IAM.Infrastructure.Persistence.EFC.Configuration.Extensions;
 
 namespace GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions
 {
@@ -11,10 +12,13 @@ namespace GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extens
         /// </summary>
         public static void ApplyAllConfigurations(this ModelBuilder builder)
         {
-            // 1. Register Payments BC configuration
+            // 1. Register IAM BC configuration
+            builder.ApplyIamConfiguration();
+            
+            // 2. Register Payments BC configuration
             builder.ApplyPaymentsConfiguration();
 
-            // 2. (Optional) in future add:
+            // 3. (Optional) in future add:
             // builder.ApplyInventoryConfiguration();
             // builder.ApplyAnalyticsConfiguration();
         }

@@ -20,15 +20,24 @@ public class UserCommandService(
     /// <summary>
     /// Authenticate a user using the provided credentials.
     /// </summary>
-    /// <param name="command">The sign-in command containing username and password.</param>
+    /// <param name="command">The sign-in command containing username/email and password.</param>
     /// <returns>A tuple with the authenticated <see cref="User"/> and the generated JWT token.</returns>
     /// <exception cref="Exception">Thrown when credentials are invalid.</exception>
     public async Task<(User user, string token)> Handle(SignInCommand command)
     {
+        // Try to find user by username first, then by email
         var user = await userRepository.FindByUsernameAsync(command.Username);
+        
+        if (user == null)
+        {
+            user = await userRepository.FindByEmailAsync(command.Username);
+        }
 
         if (user == null || !hashingService.VerifyPassword(command.Password, user.PasswordHash))
-            throw new Exception("Invalid username or password");
+            throw new Exception("Invalid credentials");
+
+        if (!user.IsActive)
+            throw new Exception("User account is inactive");
 
         var token = tokenService.GenerateToken(user);
 
@@ -38,9 +47,9 @@ public class UserCommandService(
     /// <summary>
     /// Create a new user account.
     /// </summary>
-    /// <param name="command">The sign-up command with username and password.</param>
+    /// <param name="command">The sign-up command with user details.</param>
     /// <returns>A completed <see cref="Task"/> when the operation succeeds.</returns>
-    /// <exception cref="Exception">Thrown when the username is already taken or creation fails.</exception>
+    /// <exception cref="Exception">Thrown when the username/email is already taken or creation fails.</exception>
     public async Task Handle(SignUpCommand command)
     {
         if (userRepository.ExistsByUsername(command.Username))
@@ -48,6 +57,20 @@ public class UserCommandService(
 
         var hashedPassword = hashingService.HashPassword(command.Password);
         var user = new User(command.Username, hashedPassword);
+        
+        // Set all the user properties
+        user.UpdateEmail(command.Email);
+        user.UpdateProfile(
+            command.FirstName, 
+            command.LastName, 
+            command.Phone,
+            command.Company,
+            command.BusinessName,
+            command.TaxId,
+            command.Address
+        );
+        user.UpdateRole(command.Role);
+        
         try
         {
             await userRepository.AddAsync(user);
@@ -69,6 +92,44 @@ public class UserCommandService(
         if (user == null) throw new Exception("User not found");
 
         user.UpdateRole(command.Role);
+        userRepository.Update(user);
+        await unitOfWork.CompleteAsync();
+    }
+    
+    /// <summary>
+    /// Handle a user profile update operation.
+    /// </summary>
+    /// <param name="command">The update profile command.</param>
+    public async Task Handle(UpdateProfileCommand command)
+    {
+        var user = await userRepository.FindByIdAsync(command.UserId);
+        if (user == null) throw new Exception("User not found");
+
+        user.UpdateProfile(
+            command.FirstName,
+            command.LastName,
+            command.Phone,
+            command.Company,
+            command.BusinessName,
+            command.TaxId,
+            command.Address
+        );
+        
+        userRepository.Update(user);
+        await unitOfWork.CompleteAsync();
+    }
+    
+    /// <summary>
+    /// Handle a notification settings update operation.
+    /// </summary>
+    /// <param name="command">The update notification settings command.</param>
+    public async Task Handle(UpdateNotificationSettingsCommand command)
+    {
+        var user = await userRepository.FindByIdAsync(command.UserId);
+        if (user == null) throw new Exception("User not found");
+
+        user.UpdateNotifications(command.Notifications);
+        
         userRepository.Update(user);
         await unitOfWork.CompleteAsync();
     }

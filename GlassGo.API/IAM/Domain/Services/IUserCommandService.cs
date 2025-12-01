@@ -4,7 +4,7 @@ using GlassGo.API.IAM.Domain.Model.Commands;
 namespace GlassGo.API.IAM.Domain.Services;
 
 /// <summary>
-/// Contract for commands that change user state (sign-in / sign-up).
+/// Contract for commands that change user state (sign-in / sign-up / profile updates).
 /// </summary>
 /// <remarks>
 /// Implementations execute command objects and return domain results.
@@ -31,4 +31,18 @@ public interface IUserCommandService
     /// <param name="command">The update user role command.</param>
     /// <returns>A <see cref="Task"/> that completes when the operation finishes.</returns>
     Task Handle(UpdateUserRoleCommand command);
+    
+    /// <summary>
+    /// Handle a user profile update operation.
+    /// </summary>
+    /// <param name="command">The update profile command.</param>
+    /// <returns>A <see cref="Task"/> that completes when the operation finishes.</returns>
+    Task Handle(UpdateProfileCommand command);
+    
+    /// <summary>
+    /// Handle a notification settings update operation.
+    /// </summary>
+    /// <param name="command">The update notification settings command.</param>
+    /// <returns>A <see cref="Task"/> that completes when the operation finishes.</returns>
+    Task Handle(UpdateNotificationSettingsCommand command);
 }

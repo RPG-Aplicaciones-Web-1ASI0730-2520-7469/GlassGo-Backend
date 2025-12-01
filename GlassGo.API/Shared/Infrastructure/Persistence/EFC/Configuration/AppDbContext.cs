@@ -2,11 +2,15 @@ using GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
 using GlassGo.API.ServicePlanning.Domain.Model.Aggregates;
+using GlassGo.API.IAM.Domain.Model.Aggregates;
 
 namespace GlassGo.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    // IAM Bounded Context
+    public DbSet<User> Users { get; set; }
+    
     // Service Planning Bounded Context
     public DbSet<Order> Orders { get; set; }
     
