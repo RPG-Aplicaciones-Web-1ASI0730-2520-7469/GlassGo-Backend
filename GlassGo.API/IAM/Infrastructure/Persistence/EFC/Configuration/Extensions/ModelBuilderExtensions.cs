@@ -10,6 +10,7 @@ public static class ModelBuilderExtensions
     {
         // IAM Context - User Entity Configuration
         
+        builder.Entity<User>().ToTable("Users");
         builder.Entity<User>().HasKey(u => u.Id);
         builder.Entity<User>().Property(u => u.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<User>().Property(u => u.Username).IsRequired().HasMaxLength(100);
