@@ -29,14 +29,23 @@ public class AuthenticationController(
         Description = "Sign in a user",
         OperationId = "SignIn")]
     [SwaggerResponse(StatusCodes.Status200OK, "The user was authenticated", typeof(AuthenticatedUserResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "Invalid credentials")]
     public async Task<IActionResult> SignIn([FromBody] SignInResource signInResource)
     {
-        var signInCommand = SignInCommandFromResourceAssembler.ToCommandFromResource(signInResource);
-        var authenticatedUser = await userCommandService.Handle(signInCommand);
-        var resource =
-            AuthenticatedUserResourceFromEntityAssembler.ToResourceFromEntity(authenticatedUser.user,
-                authenticatedUser.token);
-        return Ok(resource);
+        try
+        {
+            var signInCommand = SignInCommandFromResourceAssembler.ToCommandFromResource(signInResource);
+            var authenticatedUser = await userCommandService.Handle(signInCommand);
+            var resource =
+                AuthenticatedUserResourceFromEntityAssembler.ToResourceFromEntity(authenticatedUser.user,
+                    authenticatedUser.token);
+            return Ok(resource);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { success = false, message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -51,11 +60,19 @@ public class AuthenticationController(
         Description = "Sign up a new user",
         OperationId = "SignUp")]
     [SwaggerResponse(StatusCodes.Status201Created, "The user was created successfully")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request or user already exists")]
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
     {
-        var signUpCommand = SignUpCommandFromResourceAssembler.ToCommandFromResource(signUpResource);
-        await userCommandService.Handle(signUpCommand);
-        return Created(string.Empty, new { success = true, message = "User created successfully" });
+        try
+        {
+            var signUpCommand = SignUpCommandFromResourceAssembler.ToCommandFromResource(signUpResource);
+            await userCommandService.Handle(signUpCommand);
+            return Created(string.Empty, new { success = true, message = "User created successfully" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
     
     /// <summary>

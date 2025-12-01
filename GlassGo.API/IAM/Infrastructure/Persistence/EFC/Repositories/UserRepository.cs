@@ -21,7 +21,8 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     /// <returns>The matching <see cref="User"/> or <c>null</c> if none found.</returns>
     public async Task<User?> FindByUsernameAsync(string username)
     {
-        return await Context.Set<User>().FirstOrDefaultAsync(user => user.Username.Equals(username));
+        return await Context.Set<User>()
+            .FirstOrDefaultAsync(user => user.Username.ToLower() == username.ToLower());
     }
     
     /// <summary>
@@ -31,7 +32,8 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     /// <returns>The matching <see cref="User"/> or <c>null</c> if none found.</returns>
     public async Task<User?> FindByEmailAsync(string email)
     {
-        return await Context.Set<User>().FirstOrDefaultAsync(user => user.Email.Equals(email));
+        return await Context.Set<User>()
+            .FirstOrDefaultAsync(user => user.Email.ToLower() == email.ToLower());
     }
 
     /// <summary>
@@ -41,6 +43,6 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     /// <returns><c>true</c> if a user with the username exists; otherwise <c>false</c>.</returns>
     public bool ExistsByUsername(string username)
     {
-        return Context.Set<User>().Any(user => user.Username.Equals(username));
+        return Context.Set<User>().Any(user => user.Username.ToLower() == username.ToLower());
     }
 }

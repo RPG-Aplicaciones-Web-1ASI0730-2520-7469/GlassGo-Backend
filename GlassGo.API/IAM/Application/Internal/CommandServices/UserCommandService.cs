@@ -25,6 +25,9 @@ public class UserCommandService(
     /// <exception cref="Exception">Thrown when credentials are invalid.</exception>
     public async Task<(User user, string token)> Handle(SignInCommand command)
     {
+        if (string.IsNullOrWhiteSpace(command.Username) || string.IsNullOrWhiteSpace(command.Password))
+            throw new Exception("Username and password are required");
+
         // Try to find user by username first, then by email
         var user = await userRepository.FindByUsernameAsync(command.Username);
         
@@ -33,8 +36,11 @@ public class UserCommandService(
             user = await userRepository.FindByEmailAsync(command.Username);
         }
 
-        if (user == null || !hashingService.VerifyPassword(command.Password, user.PasswordHash))
-            throw new Exception("Invalid credentials");
+        if (user == null)
+            throw new Exception("Invalid credentials - User not found");
+
+        if (!hashingService.VerifyPassword(command.Password, user.PasswordHash))
+            throw new Exception("Invalid credentials - Wrong password");
 
         if (!user.IsActive)
             throw new Exception("User account is inactive");
