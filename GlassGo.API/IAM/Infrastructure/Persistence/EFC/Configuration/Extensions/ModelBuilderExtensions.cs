@@ -40,6 +40,9 @@ public static class ModelBuilderExtensions
         // PaymentMethods as owned collection (Complex Type)
         builder.Entity<User>().OwnsMany(u => u.PaymentMethods, pm =>
         {
+            pm.WithOwner().HasForeignKey("UserId");
+            pm.Property<int>("Id").ValueGeneratedOnAdd();
+            pm.HasKey("Id");
             pm.Property(p => p.Type).HasMaxLength(50);
             pm.Property(p => p.Bank).HasMaxLength(100);
             pm.Property(p => p.Account).HasMaxLength(100);
