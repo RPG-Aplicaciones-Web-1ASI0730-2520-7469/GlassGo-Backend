@@ -22,6 +22,7 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     public async Task<User?> FindByUsernameAsync(string username)
     {
         return await Context.Set<User>()
+            .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(user => user.Username.ToLower() == username.ToLower());
     }
     
@@ -33,6 +34,7 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
     public async Task<User?> FindByEmailAsync(string email)
     {
         return await Context.Set<User>()
+            .IgnoreAutoIncludes()
             .FirstOrDefaultAsync(user => user.Email.ToLower() == email.ToLower());
     }
 
