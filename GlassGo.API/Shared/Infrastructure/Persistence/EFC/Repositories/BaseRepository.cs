@@ -20,12 +20,16 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public async Task<TEntity?> FindByIdAsync(int id)
     {
-        return await Context.Set<TEntity>().FindAsync(id);
+        return await Context.Set<TEntity>()
+            .IgnoreAutoIncludes()
+            .FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
     }
 
     public async Task<IEnumerable<TEntity>> ListAsync()
     {
-        return await Context.Set<TEntity>().ToListAsync();
+        return await Context.Set<TEntity>()
+            .IgnoreAutoIncludes()
+            .ToListAsync();
     }
 
     public void Update(TEntity entity)
