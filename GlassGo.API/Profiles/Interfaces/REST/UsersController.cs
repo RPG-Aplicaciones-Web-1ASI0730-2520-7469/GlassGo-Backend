@@ -227,13 +227,13 @@ public class UsersController(IUserQueryService userQueryService, IUserCommandSer
     /// </summary>
     /// <param name="userId">The user identifier.</param>
     /// <returns>User activity history.</returns>
-    [HttpGet("history")]
+    [HttpGet("{userId}/histories")]
     [SwaggerOperation(
-        Summary = "Get user history",
+        Summary = "Get user histories",
         Description = "Get user activity history",
-        OperationId = "GetUserHistory")]
-    [SwaggerResponse(StatusCodes.Status200OK, "History retrieved successfully", typeof(IEnumerable<HistoryItemResource>))]
-    public IActionResult GetUserHistory([FromQuery] int userId)
+        OperationId = "GetUserHistories")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Histories retrieved successfully", typeof(IEnumerable<HistoryItemResource>))]
+    public IActionResult GetUserHistories(int userId)
     {
         // TODO: Implement actual history retrieval from database
         // For now, return empty list
