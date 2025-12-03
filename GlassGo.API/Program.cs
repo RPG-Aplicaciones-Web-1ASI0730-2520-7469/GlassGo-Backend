@@ -158,15 +158,6 @@ using (var scope = app.Services.CreateScope())
     if (!builder.Environment.IsDevelopment())
     {
         dbContext.Database.Migrate();
-        
-        // Execute custom SQL migrations
-        var migrationPath = Path.Combine(AppContext.BaseDirectory, "Database", "Migrations", "001_CreatePaymentMethodsTable.sql");
-        if (File.Exists(migrationPath))
-        {
-            var sql = File.ReadAllText(migrationPath);
-            dbContext.Database.ExecuteSqlRaw(sql);
-            Console.WriteLine("✅ Migration executed: 001_CreatePaymentMethodsTable.sql");
-        }
     }
     else
     {
