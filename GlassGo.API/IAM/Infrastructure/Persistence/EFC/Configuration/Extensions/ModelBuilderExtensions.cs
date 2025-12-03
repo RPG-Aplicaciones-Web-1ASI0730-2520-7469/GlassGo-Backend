@@ -37,7 +37,9 @@ public static class ModelBuilderExtensions
             n.Property(ns => ns.Push).HasColumnName("NotificationPush").HasDefaultValue(true);
         });
         
-        // PaymentMethods as owned collection (Complex Type)
+        // PaymentMethods as owned collection (Complex Type) - TEMPORARILY DISABLED
+        // TODO: Re-enable after database schema is fixed
+        /*
         builder.Entity<User>().OwnsMany(u => u.PaymentMethods, pm =>
         {
             pm.WithOwner().HasForeignKey("UserId");
@@ -47,6 +49,7 @@ public static class ModelBuilderExtensions
             pm.Property(p => p.Bank).HasMaxLength(100);
             pm.Property(p => p.Account).HasMaxLength(100);
         });
+        */
         
         // Indexes
         builder.Entity<User>().HasIndex(u => u.Username).IsUnique();

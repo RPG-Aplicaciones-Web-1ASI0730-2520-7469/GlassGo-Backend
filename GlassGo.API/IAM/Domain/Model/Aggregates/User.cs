@@ -104,10 +104,11 @@ public class User(string username, string passwordHash)
     /// </summary>
     public NotificationSettings Notifications { get; private set; } = new();
     
-    /// <summary>
-    /// Gets or sets the user's payment methods.
-    /// </summary>
-    public List<PaymentMethod> PaymentMethods { get; private set; } = new();
+    // TEMPORARILY DISABLED - TODO: Re-enable after database schema is fixed
+    // /// <summary>
+    // /// Gets or sets the user's payment methods.
+    // /// </summary>
+    // public List<PaymentMethod> PaymentMethods { get; private set; } = new();
 
     /// <summary>
     /// Update the user's username.
