@@ -39,4 +39,10 @@
       </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Database\Migrations\*.sql">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
