@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace GlassGo.API.IAM.Interfaces.REST;
 [Authorize]
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("Available Authentication endpoints")]
 public class AuthenticationController(
@@ -22,12 +22,12 @@ public class AuthenticationController(
     /// </summary>
     /// <param name="signInResource">The sign-in resource containing credentials.</param>
     /// <returns>Returns an <see cref="IActionResult"/> that contains an <see cref="AuthenticatedUserResource"/> with a JWT token when authentication succeeds.</returns>
-    [HttpPost("sign-in")]
+    [HttpPost("sessions")]
     [AllowAnonymous]
     [SwaggerOperation(
-        Summary = "Sign in",
-        Description = "Sign in a user",
-        OperationId = "SignIn")]
+        Summary = "Create session",
+        Description = "Create a new user session (sign in)",
+        OperationId = "CreateSession")]
     [SwaggerResponse(StatusCodes.Status200OK, "The user was authenticated", typeof(AuthenticatedUserResource))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Invalid credentials")]
@@ -53,12 +53,12 @@ public class AuthenticationController(
     /// </summary>
     /// <param name="signUpResource">The sign-up resource containing the new user's credentials.</param>
     /// <returns>Returns an <see cref="IActionResult"/> that indicates the operation result.</returns>
-    [HttpPost("sign-up")]
+    [HttpPost("users")]
     [AllowAnonymous]
     [SwaggerOperation(
-        Summary = "Sign-up",
-        Description = "Sign up a new user",
-        OperationId = "SignUp")]
+        Summary = "Create user",
+        Description = "Create a new user account (sign up)",
+        OperationId = "CreateUser")]
     [SwaggerResponse(StatusCodes.Status201Created, "The user was created successfully")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request or user already exists")]
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
@@ -80,12 +80,12 @@ public class AuthenticationController(
     /// </summary>
     /// <param name="token">The token to validate.</param>
     /// <returns>Validation result.</returns>
-    [HttpPost("validate")]
+    [HttpPost("tokens/validations")]
     [AllowAnonymous]
     [SwaggerOperation(
-        Summary = "Validate token",
+        Summary = "Create token validation",
         Description = "Validate if a JWT token is valid",
-        OperationId = "ValidateToken")]
+        OperationId = "CreateTokenValidation")]
     [SwaggerResponse(StatusCodes.Status200OK, "Token is valid")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Token is invalid or expired")]
     public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenResource resource)
@@ -109,11 +109,11 @@ public class AuthenticationController(
     /// Logout a user (invalidate token).
     /// </summary>
     /// <returns>Logout confirmation.</returns>
-    [HttpPost("logout")]
+    [HttpDelete("sessions")]
     [SwaggerOperation(
-        Summary = "Logout",
-        Description = "Logout user and invalidate token",
-        OperationId = "Logout")]
+        Summary = "Delete session",
+        Description = "Delete user session (logout)",
+        OperationId = "DeleteSession")]
     [SwaggerResponse(StatusCodes.Status200OK, "Logout successful")]
     public IActionResult Logout()
     {
@@ -127,12 +127,12 @@ public class AuthenticationController(
     /// </summary>
     /// <param name="resource">The forgot password resource containing the email.</param>
     /// <returns>Password reset email sent confirmation.</returns>
-    [HttpPost("forgot-password")]
+    [HttpPost("passwords/resets")]
     [AllowAnonymous]
     [SwaggerOperation(
-        Summary = "Forgot password",
-        Description = "Send password reset email",
-        OperationId = "ForgotPassword")]
+        Summary = "Create password reset",
+        Description = "Request a password reset email",
+        OperationId = "CreatePasswordReset")]
     [SwaggerResponse(StatusCodes.Status200OK, "Password reset email sent")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Email not found")]
     public IActionResult ForgotPassword([FromBody] ForgotPasswordResource resource)
