@@ -157,7 +157,26 @@ using (var scope = app.Services.CreateScope())
     // Only run migrations for relational databases (not InMemory)
     if (!builder.Environment.IsDevelopment())
     {
-        dbContext.Database.Migrate();
+        try
+        {
+            // Try to apply pending migrations
+            var pendingMigrations = dbContext.Database.GetPendingMigrations();
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine($"Applying {pendingMigrations.Count()} pending migrations...");
+                dbContext.Database.Migrate();
+            }
+            else
+            {
+                Console.WriteLine("Database is up to date. No migrations to apply.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Migration warning: {ex.Message}");
+            // If migration fails, ensure database is created
+            dbContext.Database.EnsureCreated();
+        }
     }
     else
     {
